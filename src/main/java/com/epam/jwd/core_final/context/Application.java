@@ -2,16 +2,23 @@ package com.epam.jwd.core_final.context;
 
 import com.epam.jwd.core_final.context.impl.NassaContext;
 import com.epam.jwd.core_final.exception.InvalidStateException;
-
-import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface Application {
 
-    static ApplicationMenu start() throws InvalidStateException {
-        final Supplier<ApplicationContext> applicationContextSupplier = null; // todo
-        final NassaContext nassaContext = new NassaContext();
+    Logger LOGGER = LoggerFactory.getLogger(Application.class);
+    NassaContext context = new NassaContext();
 
-        nassaContext.init();
-        return applicationContextSupplier::get;
+    static void start() {
+        // todo
+        try {
+            context.init();
+        } catch (InvalidStateException e) {
+            LOGGER.error(e.getMessage());
+            System.out.println(e.getMessage());
+        }
+
+        ApplicationMenu.getApplicationMenu().show();
     }
 }

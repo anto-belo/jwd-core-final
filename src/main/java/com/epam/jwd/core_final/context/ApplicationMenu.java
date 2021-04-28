@@ -1,16 +1,22 @@
 package com.epam.jwd.core_final.context;
 
+import com.epam.jwd.core_final.context.impl.NassaApplicationMenu;
+
 // todo replace Object with your own types
 @FunctionalInterface
 public interface ApplicationMenu {
 
-    ApplicationContext getApplicationContext();
+    void show();
 
-    default Object printAvailableOptions() {
+    default void printAvailableOptions() {
+
+    }
+
+    default Object handleUserInput(String input) {
         return null;
     }
 
-    default Object handleUserInput(Object o) {
-        return null;
+    static ApplicationMenu getApplicationMenu() {
+        return new NassaApplicationMenu();
     }
 }

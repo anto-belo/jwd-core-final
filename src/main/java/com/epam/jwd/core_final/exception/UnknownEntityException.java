@@ -1,5 +1,7 @@
 package com.epam.jwd.core_final.exception;
 
+import java.util.Arrays;
+
 public class UnknownEntityException extends RuntimeException {
 
     private final String entityName;
@@ -19,8 +21,11 @@ public class UnknownEntityException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        // todo
-        // you should use entityName, args (if necessary)
-        return null;
+        String baseMsg = "Unknown entity: " + entityName;
+        if (args != null) {
+            return baseMsg + " . Args: " + Arrays.toString(args);
+        } else {
+            return baseMsg;
+        }
     }
 }

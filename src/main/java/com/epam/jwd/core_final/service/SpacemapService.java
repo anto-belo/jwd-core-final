@@ -7,5 +7,5 @@ public interface SpacemapService {
     Planet getRandomPlanet();
 
     // Dijkstra ?
-    int getDistanceBetweenPlanets(Planet first, Planet second);
+    double getDistanceBetweenPlanets(Planet first, Planet second);
 }
