@@ -1,8 +1,9 @@
-package com.epam.jwd.core_final.util;
+package com.epam.jwd.core_final.util.impl;
 
 import com.epam.jwd.core_final.domain.ApplicationProperties;
 import com.epam.jwd.core_final.domain.FlightMission;
 import com.epam.jwd.core_final.service.impl.SimpleMissionService;
+import com.epam.jwd.core_final.util.Exporter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
@@ -16,11 +17,12 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public enum MissionExporter {
+public enum MissionExporter implements Exporter {
     INSTANCE;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MissionExporter.class);
 
+    @Override
     public void export() {
         List<FlightMission> flightMissions = SimpleMissionService.INSTANCE.findAllMissions();
         try {

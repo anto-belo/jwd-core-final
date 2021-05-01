@@ -27,8 +27,8 @@ public final class SpaceshipFactory implements EntityFactory<Spaceship> {
         if (args.length == 3) {
             return new Spaceship(name, crew, flightDistance);
         } else {
-            Long id = (Long) args[3];
-            Boolean isReady = (Boolean) args[4];
+            Boolean isReady = (Boolean) args[3];
+            Long id = (Long) args[4];
             return new Spaceship(id, name, crew, flightDistance, isReady);
         }
     }

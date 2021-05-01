@@ -1,16 +1,21 @@
 package com.epam.jwd.core_final.criteria;
 
-import com.epam.jwd.core_final.domain.*;
+import com.epam.jwd.core_final.domain.AbstractBaseEntity;
+import com.epam.jwd.core_final.domain.CrewMember;
+import com.epam.jwd.core_final.domain.FlightMission;
+import com.epam.jwd.core_final.domain.MissionResult;
+import com.epam.jwd.core_final.domain.Planet;
+import com.epam.jwd.core_final.domain.Spaceship;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * Should be a builder for {@link com.epam.jwd.core_final.domain.FlightMission} fields
  */
 public class FlightMissionCriteria extends Criteria<FlightMission> {
-    private final LocalDate startDate;
-    private final LocalDate endDate;
+    private final LocalDateTime startDate;
+    private final LocalDateTime endDate;
     private final Long distance;
     private final Spaceship assignedSpaceship;
     private final List<CrewMember> assignedCrew;
@@ -18,7 +23,9 @@ public class FlightMissionCriteria extends Criteria<FlightMission> {
     private final Planet from;
     private final Planet to;
 
-    private FlightMissionCriteria(Long id, String name, LocalDate startDate, LocalDate endDate, Long distance, Spaceship assignedSpaceship, List<CrewMember> assignedCrew, MissionResult missionResult, Planet from, Planet to) {
+    FlightMissionCriteria(Long id, String name, LocalDateTime startDate, LocalDateTime endDate, Long distance,
+                          Spaceship assignedSpaceship, List<CrewMember> assignedCrew,
+                          MissionResult missionResult, Planet from, Planet to) {
         super(id, name);
         this.startDate = startDate;
         this.endDate = endDate;
@@ -44,59 +51,4 @@ public class FlightMissionCriteria extends Criteria<FlightMission> {
                 && (to == null || to.equals(m.getTo()));
     }
 
-    static class FlightMissionCriteriaBuilder extends CriteriaBuilder<FlightMission> {
-        private LocalDate startDate;
-        private LocalDate endDate;
-        private Long distance;
-        private Spaceship assignedSpaceship;
-        private List<CrewMember> assignedCrew;
-        private MissionResult missionResult;
-        private Planet from;
-        private Planet to;
-
-        public FlightMissionCriteriaBuilder setStartDate(LocalDate startDate) {
-            this.startDate = startDate;
-            return this;
-        }
-
-        public FlightMissionCriteriaBuilder setEndDate(LocalDate endDate) {
-            this.endDate = endDate;
-            return this;
-        }
-
-        public FlightMissionCriteriaBuilder setDistance(Long distance) {
-            this.distance = distance;
-            return this;
-        }
-
-        public FlightMissionCriteriaBuilder setAssignedSpaceship(Spaceship assignedSpaceship) {
-            this.assignedSpaceship = assignedSpaceship;
-            return this;
-        }
-
-        public FlightMissionCriteriaBuilder setAssignedCrew(List<CrewMember> assignedCrew) {
-            this.assignedCrew = assignedCrew;
-            return this;
-        }
-
-        public FlightMissionCriteriaBuilder setMissionResult(MissionResult missionResult) {
-            this.missionResult = missionResult;
-            return this;
-        }
-
-        public FlightMissionCriteriaBuilder setFrom(Planet from) {
-            this.from = from;
-            return this;
-        }
-
-        public FlightMissionCriteriaBuilder setTo(Planet to) {
-            this.to = to;
-            return this;
-        }
-
-        @Override
-        public Criteria<FlightMission> getResult() {
-            return new FlightMissionCriteria(id, name, startDate, endDate, distance, assignedSpaceship, assignedCrew, missionResult, from, to);
-        }
-    }
 }

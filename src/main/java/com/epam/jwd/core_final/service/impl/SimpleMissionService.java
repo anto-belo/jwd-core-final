@@ -1,16 +1,14 @@
 package com.epam.jwd.core_final.service.impl;
 
+import com.epam.jwd.core_final.context.Application;
 import com.epam.jwd.core_final.criteria.Criteria;
 import com.epam.jwd.core_final.criteria.FlightMissionCriteria;
-import com.epam.jwd.core_final.domain.*;
+import com.epam.jwd.core_final.domain.FlightMission;
 import com.epam.jwd.core_final.exception.EntityDuplicateException;
 import com.epam.jwd.core_final.exception.InvalidStateException;
 import com.epam.jwd.core_final.exception.UnknownEntityException;
-import com.epam.jwd.core_final.factory.EntityFactory;
-import com.epam.jwd.core_final.factory.impl.CrewMemberFactory;
-import com.epam.jwd.core_final.factory.impl.FlightMissionFactory;
-import com.epam.jwd.core_final.factory.impl.SpaceshipFactory;
 import com.epam.jwd.core_final.service.MissionService;
+import com.epam.jwd.core_final.service.MissionStatusChanger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,69 +53,25 @@ public enum SimpleMissionService implements MissionService {
         FlightMission currentFlightMission = oMission.orElseThrow(()
                 -> new UnknownEntityException(missionNotExistMsg + newFlightMission.getName()));
         Collection<FlightMission> missions = context.retrieveBaseEntityList(FlightMission.class);
-        ((List<FlightMission>) missions).set(((List<FlightMission>) missions)
-                .indexOf(currentFlightMission), newFlightMission);
+        ((List<FlightMission>) missions).set(((List<FlightMission>) missions).indexOf(currentFlightMission),
+                newFlightMission);
         return getFlightMissionById(missionToUpdateId).orElse(null);
     }
 
-    public void changeMissionStatusEnded(FlightMission mission) {
-        EntityFactory<FlightMission> factory = FlightMissionFactory.getInstance();
-        MissionResult result = (Math.random() * 100 < 50) ? MissionResult.COMPLETED : MissionResult.FAILED;
-        if (result == MissionResult.FAILED) {
-            setMissionMembersNotReady(mission);
-        }
-        FlightMission updatedMission = factory.create(mission.getName(), mission.getStartDate(),
-                mission.getAssignedSpaceship(), mission.getAssignedCrew(), result,
-                mission.getFrom(), mission.getTo(), mission.getId());
-        updateMissionDetails(updatedMission);
-    }
-
-    private void setMissionMembersNotReady(FlightMission mission) {
-        EntityFactory<CrewMember> crewFactory = CrewMemberFactory.getInstance();
-        SimpleCrewService crewService = SimpleCrewService.INSTANCE;
-        for (CrewMember member : mission.getAssignedCrew()) {
-            CrewMember updatedMember = crewFactory.create(member.getName(), member.getRole(), member.getRank(),
-                    false, member.getId());
-            crewService.updateCrewMemberDetails(updatedMember);
-        }
-
-        Spaceship spaceship = mission.getAssignedSpaceship();
-        EntityFactory<Spaceship> spaceshipFactory = SpaceshipFactory.getInstance();
-        Spaceship updatedSpaceship = spaceshipFactory.create(spaceship.getName(), spaceship.getCrew(),
-                spaceship.getFlightDistance(), spaceship.getId(), false);
-        SimpleSpaceshipService.INSTANCE.updateSpaceshipDetails(updatedSpaceship);
-    }
-
-    public void changeMissionStatusInProgress(FlightMission mission) {
-        EntityFactory<FlightMission> factory = FlightMissionFactory.getInstance();
-        FlightMission updatedMission = factory.create(mission.getName(), mission.getStartDate(),
-                mission.getAssignedSpaceship(), mission.getAssignedCrew(), MissionResult.IN_PROGRESS,
-                mission.getFrom(), mission.getTo(), mission.getId());
-        updateMissionDetails(updatedMission);
-    }
-
-    public void mayChangeMissionStatusCancelled(FlightMission mission) {
-        EntityFactory<FlightMission> factory = FlightMissionFactory.getInstance();
-        MissionResult result = (Math.random() * 100 < 20) ? MissionResult.CANCELLED : MissionResult.IN_PROGRESS;
-        if (result == MissionResult.CANCELLED) {
-            FlightMission updatedMission = factory.create(mission.getName(), mission.getStartDate(),
-                    null, null, result, mission.getFrom(), mission.getTo(), mission.getId());
-            updateMissionDetails(updatedMission);
-        }
-    }
-
+    @Override
     public Optional<FlightMission> getFlightMissionById(Long id) {
         return context.retrieveBaseEntityList(FlightMission.class).stream()
                 .filter(s -> id.equals(s.getId()))
                 .findFirst();
     }
 
+    @Override
     public boolean isIntersectingMissions(FlightMission m1, FlightMission m2) {
         LocalDateTime m1Start = m1.getStartDate();
         LocalDateTime m1End = m1.getEndDate();
         LocalDateTime m2Start = m2.getStartDate();
         LocalDateTime m2End = m2.getEndDate();
-        return !(m1Start.isBefore(m2Start) && m2Start.isBefore(m1End))
+        return (m1Start.isBefore(m2Start) && m2Start.isBefore(m1End))
                 || (m1Start.isBefore(m2End) && m2End.isBefore(m1End))
                 || (m2Start.isBefore(m1Start) && m1Start.isBefore(m2End))
                 || (m2Start.isBefore(m1End) && m1End.isBefore(m2End));
@@ -141,5 +95,12 @@ public enum SimpleMissionService implements MissionService {
     private boolean isUniqueName(String name) {
         return context.retrieveBaseEntityList(FlightMission.class).stream()
                 .noneMatch(s -> s.getName().equals(name));
+    }
+
+    public void updateMissionsStatus() {
+        MissionStatusChanger changer = SimpleMissionStatusChanger.INSTANCE;
+        for (FlightMission mission : Application.context.retrieveBaseEntityList(FlightMission.class)) {
+            changer.update(mission);
+        }
     }
 }

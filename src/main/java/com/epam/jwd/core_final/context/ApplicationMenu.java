@@ -6,17 +6,9 @@ import com.epam.jwd.core_final.context.impl.NassaApplicationMenu;
 @FunctionalInterface
 public interface ApplicationMenu {
 
-    void show();
-
-    default void printAvailableOptions() {
-
-    }
-
-    default Object handleUserInput(String input) {
-        return null;
-    }
-
     static ApplicationMenu getApplicationMenu() {
         return new NassaApplicationMenu();
     }
+
+    void show();
 }

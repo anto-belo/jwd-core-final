@@ -2,7 +2,11 @@ package com.epam.jwd.core_final.context.impl;
 
 import com.epam.jwd.core_final.context.ApplicationContext;
 import com.epam.jwd.core_final.context.Menu;
-import com.epam.jwd.core_final.domain.*;
+import com.epam.jwd.core_final.domain.BaseEntity;
+import com.epam.jwd.core_final.domain.CrewMember;
+import com.epam.jwd.core_final.domain.FlightMission;
+import com.epam.jwd.core_final.domain.Planet;
+import com.epam.jwd.core_final.domain.Spaceship;
 import com.epam.jwd.core_final.exception.InvalidFileFormatException;
 import com.epam.jwd.core_final.exception.InvalidStateException;
 import com.epam.jwd.core_final.factory.EntityFactory;
@@ -26,7 +30,6 @@ public class NassaContext implements ApplicationContext {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NassaContext.class);
     public static Menu chosenMenu = MainMenu.INSTANCE;
-    public static int chosenOption;
 
     // no getters/setters for them
     private final Collection<CrewMember> crewMembers = new ArrayList<>();
@@ -58,9 +61,9 @@ public class NassaContext implements ApplicationContext {
     @Override
     public void init() throws InvalidStateException {
         try {
-            new CrewFileParser().fillEntityStorage();
-            new SpaceshipFileParser().fillEntityStorage();
-            new SpacemapFileParser().fillEntityStorage();
+            CrewFileParser.getInstance().parse();
+            SpaceshipFileParser.getInstance().parse();
+            SpacemapFileParser.getInstance().parse();
         } catch (InvalidFileFormatException e) {
             LOGGER.error(e.getMessage());
             System.out.println(e.getMessage());

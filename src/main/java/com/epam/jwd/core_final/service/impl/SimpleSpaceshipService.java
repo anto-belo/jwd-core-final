@@ -3,10 +3,16 @@ package com.epam.jwd.core_final.service.impl;
 import com.epam.jwd.core_final.criteria.Criteria;
 import com.epam.jwd.core_final.criteria.SpaceshipCriteria;
 import com.epam.jwd.core_final.domain.FlightMission;
+import com.epam.jwd.core_final.domain.MissionResult;
 import com.epam.jwd.core_final.domain.Spaceship;
-import com.epam.jwd.core_final.exception.*;
+import com.epam.jwd.core_final.exception.EntityDuplicateException;
+import com.epam.jwd.core_final.exception.InvalidStateException;
+import com.epam.jwd.core_final.exception.NoSuitableMissionsException;
+import com.epam.jwd.core_final.exception.NotReadyForNextMissions;
+import com.epam.jwd.core_final.exception.UnknownEntityException;
 import com.epam.jwd.core_final.factory.EntityFactory;
 import com.epam.jwd.core_final.factory.impl.FlightMissionFactory;
+import com.epam.jwd.core_final.service.MissionService;
 import com.epam.jwd.core_final.service.SpaceshipService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,18 +37,14 @@ public enum SimpleSpaceshipService implements SpaceshipService {
 
     @Override
     public List<Spaceship> findAllSpaceshipsByCriteria(Criteria<? extends Spaceship> criteria) {
-        return context
-                .retrieveBaseEntityList(Spaceship.class)
-                .stream()
+        return context.retrieveBaseEntityList(Spaceship.class).stream()
                 .filter(((SpaceshipCriteria) criteria)::isSuitsToCriteria)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<Spaceship> findSpaceshipByCriteria(Criteria<? extends Spaceship> criteria) {
-        return context
-                .retrieveBaseEntityList(Spaceship.class)
-                .stream()
+        return context.retrieveBaseEntityList(Spaceship.class).stream()
                 .filter(((SpaceshipCriteria) criteria)::isSuitsToCriteria)
                 .findFirst();
     }
@@ -55,12 +57,12 @@ public enum SimpleSpaceshipService implements SpaceshipService {
         Spaceship currentSpaceship = oShip.orElseThrow(()
                 -> new UnknownEntityException(spaceshipNotExistMsg + newSpaceship.getName()));
         Collection<Spaceship> spaceships = context.retrieveBaseEntityList(Spaceship.class);
-        spaceships.remove(currentSpaceship);
-        spaceships.add(newSpaceship);
+        ((List<Spaceship>) spaceships).set(((List<Spaceship>) spaceships).indexOf(currentSpaceship),
+                newSpaceship);
         return getSpaceshipById(spaceshipToUpdateId).orElse(null);
     }
 
-    private Optional<Spaceship> getSpaceshipById(Long id) {
+    public Optional<Spaceship> getSpaceshipById(Long id) {
         return context.retrieveBaseEntityList(Spaceship.class).stream()
                 .filter(s -> id.equals(s.getId()))
                 .findFirst();
@@ -80,7 +82,6 @@ public enum SimpleSpaceshipService implements SpaceshipService {
         FlightMission updateMission = factory.create(mission.getName(), mission.getStartDate(),
                 spaceship, mission.getAssignedCrew(), mission.getMissionResult(),
                 mission.getFrom(), mission.getTo(), mission.getId());
-
         SimpleMissionService.INSTANCE.updateMissionDetails(updateMission);
     }
 
@@ -93,9 +94,11 @@ public enum SimpleSpaceshipService implements SpaceshipService {
     }
 
     private boolean isIntersectsWithSpaceshipMissions(FlightMission currentMission, Spaceship spaceship) {
-        SimpleMissionService service = SimpleMissionService.INSTANCE;
+        MissionService service = SimpleMissionService.INSTANCE;
         for (FlightMission mission : service.findAllMissions()) {
-            if (!mission.equals(currentMission) && mission.getAssignedSpaceship().equals(spaceship)
+            if (!mission.equals(currentMission) && (mission.getMissionResult().equals(MissionResult.PLANNED)
+                    || mission.getMissionResult().equals(MissionResult.IN_PROGRESS))
+                    && mission.getAssignedSpaceship().equals(spaceship)
                     && service.isIntersectingMissions(currentMission, mission))
                 return true;
         }
@@ -120,5 +123,18 @@ public enum SimpleSpaceshipService implements SpaceshipService {
     private boolean isUniqueName(String name) {
         return context.retrieveBaseEntityList(Spaceship.class).stream()
                 .noneMatch(s -> s.getName().equals(name));
+    }
+
+    @Override
+    public boolean isAssignedOnAnyMissions(Spaceship spaceship) {
+        List<FlightMission> missions = SimpleMissionService.INSTANCE.findAllMissions();
+        if (missions.size() == 0) {
+            return false;
+        }
+        return missions.stream()
+                .filter(s -> s.getMissionResult() == MissionResult.PLANNED ||
+                        s.getMissionResult() == MissionResult.IN_PROGRESS)
+                .map(FlightMission::getAssignedSpaceship)
+                .noneMatch(spaceship::equals);
     }
 }

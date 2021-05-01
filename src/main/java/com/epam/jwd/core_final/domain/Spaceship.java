@@ -1,10 +1,12 @@
 package com.epam.jwd.core_final.domain;
 
+import com.epam.jwd.core_final.service.impl.SimpleSpaceshipService;
+
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * crew {@link java.util.Map<Role, Short>}
+ * crew {@link java.util.Map<Role,Short>}
  * flightDistance {@link Long} - total available flight distance
  * isReadyForNextMissions {@link Boolean} - true by default. Set to false, after first failed mission
  */
@@ -62,12 +64,22 @@ public class Spaceship extends AbstractBaseEntity {
 
     @Override
     public String toString() {
-        return "Spaceship{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", crew=" + crew +
-                ", flightDistance=" + flightDistance +
-                ", isReadyForNextMissions=" + isReadyForNextMissions +
-                '}';
+        return String.format("#%-3d %-15s %s DIST: %-6d %-9s %s",
+                id,
+                name,
+                crewToString(crew),
+                flightDistance,
+                isReadyForNextMissions ? "READY" : "NOT READY",
+                isReadyForNextMissions ?
+                        (SimpleSpaceshipService.INSTANCE.isAssignedOnAnyMissions(this) ? "VACANT" : "") : ""
+        );
+    }
+
+    public String crewToString(Map<Role, Short> crew) {
+        StringBuilder crewString = new StringBuilder();
+        for (Role r : crew.keySet()) {
+            crewString.append(r.getName()).append(": ").append(crew.get(r)).append("\t");
+        }
+        return crewString.toString();
     }
 }

@@ -17,4 +17,8 @@ public interface MissionService {
     FlightMission updateMissionDetails(FlightMission flightMission);
 
     FlightMission createMission(FlightMission flightMission);
+
+    Optional<FlightMission> getFlightMissionById(Long id);
+
+    boolean isIntersectingMissions(FlightMission m1, FlightMission m2);
 }

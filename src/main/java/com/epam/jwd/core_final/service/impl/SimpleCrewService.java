@@ -4,14 +4,24 @@ import com.epam.jwd.core_final.criteria.CrewMemberCriteria;
 import com.epam.jwd.core_final.criteria.Criteria;
 import com.epam.jwd.core_final.domain.CrewMember;
 import com.epam.jwd.core_final.domain.FlightMission;
+import com.epam.jwd.core_final.domain.MissionResult;
 import com.epam.jwd.core_final.domain.Role;
 import com.epam.jwd.core_final.domain.Spaceship;
-import com.epam.jwd.core_final.exception.*;
+import com.epam.jwd.core_final.exception.EntityDuplicateException;
+import com.epam.jwd.core_final.exception.InvalidStateException;
+import com.epam.jwd.core_final.exception.NoSuitableMissionsException;
+import com.epam.jwd.core_final.exception.NotReadyForNextMissions;
+import com.epam.jwd.core_final.exception.UnknownEntityException;
 import com.epam.jwd.core_final.service.CrewService;
+import com.epam.jwd.core_final.service.MissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.epam.jwd.core_final.context.Application.context;
@@ -48,12 +58,12 @@ public enum SimpleCrewService implements CrewService {
         CrewMember currentCrewMember = oMember.orElseThrow(()
                 -> new UnknownEntityException(memberNotExistMsg + newCrewMember.getName()));
         Collection<CrewMember> members = context.retrieveBaseEntityList(CrewMember.class);
-        ((List<CrewMember>) members).set(((List<CrewMember>) members)
-                .indexOf(currentCrewMember), newCrewMember);
+        ((List<CrewMember>) members).set(((List<CrewMember>) members).indexOf(currentCrewMember),
+                newCrewMember);
         return getCrewMemberById(memberToUpdateId).orElse(null);
     }
 
-    private Optional<CrewMember> getCrewMemberById(Long id) {
+    public Optional<CrewMember> getCrewMemberById(Long id) {
         return context.retrieveBaseEntityList(CrewMember.class).stream()
                 .filter(s -> id.equals(s.getId()))
                 .findFirst();
@@ -80,10 +90,22 @@ public enum SimpleCrewService implements CrewService {
                 .findFirst();
     }
 
+    @Override
+    public int getMembersNeeded(Spaceship spaceship) {
+        int needed = 0;
+        Map<Role, Short> crew = spaceship.getCrew();
+        for (Role r : crew.keySet()) {
+            needed += crew.get(r);
+        }
+        return needed;
+    }
+
     private boolean isIntersectsWithMemberMissions(FlightMission currentMission, CrewMember member) {
-        SimpleMissionService service = SimpleMissionService.INSTANCE;
+        MissionService service = SimpleMissionService.INSTANCE;
         for (FlightMission mission : service.findAllMissions()) {
-            if (!mission.equals(currentMission) && mission.getAssignedCrew().contains(member)
+            if (!mission.equals(currentMission) && (mission.getMissionResult().equals(MissionResult.PLANNED)
+                    || mission.getMissionResult().equals(MissionResult.IN_PROGRESS))
+                    && mission.getAssignedCrew().contains(member)
                     && service.isIntersectingMissions(currentMission, mission))
                 return true;
         }
@@ -102,19 +124,11 @@ public enum SimpleCrewService implements CrewService {
         return memberRoleCurrent < memberRoleLimit;
     }
 
-    public int getMembersNeeded(Spaceship spaceship) {
-        int needed = 0;
-        Map<Role, Short> crew = spaceship.getCrew();
-        for (Role r : crew.keySet()) {
-            needed += crew.get(r);
-        }
-        return needed;
-    }
-
     @Override
     public CrewMember createCrewMember(CrewMember crewMember) throws RuntimeException {
         if (!isUniqueName(crewMember.getName())) {
-            throw new EntityDuplicateException("Crew member already exists");
+            String memberExistsMsg = "Crew member already exists";
+            throw new EntityDuplicateException(memberExistsMsg);
         }
         try {
             return context.addEntity(crewMember);
@@ -128,5 +142,17 @@ public enum SimpleCrewService implements CrewService {
     private boolean isUniqueName(String name) {
         return context.retrieveBaseEntityList(CrewMember.class).stream()
                 .noneMatch(s -> s.getName().equals(name));
+    }
+
+    public boolean isAssignedOnAnyMissions(CrewMember member) {
+        List<FlightMission> missions = SimpleMissionService.INSTANCE.findAllMissions();
+        if (missions.size() == 0) {
+            return false;
+        }
+        return missions.stream()
+                .filter(s -> s.getMissionResult() == MissionResult.PLANNED ||
+                        s.getMissionResult() == MissionResult.IN_PROGRESS)
+                .map(FlightMission::getAssignedCrew)
+                .noneMatch(s -> s.contains(member));
     }
 }

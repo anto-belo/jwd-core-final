@@ -1,5 +1,7 @@
 package com.epam.jwd.core_final.domain;
 
+import com.epam.jwd.core_final.service.impl.SimpleCrewService;
+
 /**
  * Expected fields:
  * <p>
@@ -17,13 +19,6 @@ public class CrewMember extends AbstractBaseEntity {
         this.role = role;
         this.rank = rank;
         this.isReadyForNextMissions = true;
-    }
-
-    public CrewMember(String name, Role role, Rank rank, Boolean isReadyForNextMissions) {
-        super(name);
-        this.role = role;
-        this.rank = rank;
-        this.isReadyForNextMissions = isReadyForNextMissions;
     }
 
     public CrewMember(Long id, String name, Role role, Rank rank, Boolean isReadyForNextMissions) {
@@ -47,12 +42,14 @@ public class CrewMember extends AbstractBaseEntity {
 
     @Override
     public String toString() {
-        return "CrewMember{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", role=" + role +
-                ", rank=" + rank +
-                ", isReadyForNextMissions=" + isReadyForNextMissions +
-                '}';
+        return String.format("#%-3d %-20s %-20s %-20s %-10s %s",
+                id,
+                name,
+                role,
+                rank,
+                isReadyForNextMissions ? "READY" : "NOT READY",
+                isReadyForNextMissions ?
+                        (SimpleCrewService.INSTANCE.isAssignedOnAnyMissions(this) ? "VACANT" : "") : ""
+        );
     }
 }

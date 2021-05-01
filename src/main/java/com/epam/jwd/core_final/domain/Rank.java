@@ -25,7 +25,7 @@ public enum Rank implements BaseEntity {
                 return r;
             }
         }
-        throw new UnknownEntityException("Unknown entity with rank id " + id);
+        throw new UnknownEntityException("Unknown rank id: " + id);
     }
 
     @Override

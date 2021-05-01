@@ -25,7 +25,7 @@ public enum Role implements BaseEntity {
                 return r;
             }
         }
-        throw new UnknownEntityException("Unknown entity with role id " + id);
+        throw new UnknownEntityException("Unknown role id: " + id);
     }
 
     @Override

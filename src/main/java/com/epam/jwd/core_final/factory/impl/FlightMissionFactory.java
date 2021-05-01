@@ -1,6 +1,10 @@
 package com.epam.jwd.core_final.factory.impl;
 
-import com.epam.jwd.core_final.domain.*;
+import com.epam.jwd.core_final.domain.CrewMember;
+import com.epam.jwd.core_final.domain.FlightMission;
+import com.epam.jwd.core_final.domain.MissionResult;
+import com.epam.jwd.core_final.domain.Planet;
+import com.epam.jwd.core_final.domain.Spaceship;
 import com.epam.jwd.core_final.factory.EntityFactory;
 
 import java.time.LocalDateTime;

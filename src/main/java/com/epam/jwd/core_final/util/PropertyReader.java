@@ -26,7 +26,7 @@ public final class PropertyReader {
     /**
      * try-with-resource using FileInputStream
      *
-     * @see {https://www.netjstech.com/2017/09/how-to-read-properties-file-in-java.html for an example}
+     * @see <a href="https://www.netjstech.com/2017/09/how-to-read-properties-file-in-java.html">for an example</a> }
      * <p>
      * as a result - you should populate {@link ApplicationProperties} with corresponding
      * values from property file

@@ -1,7 +1,6 @@
 package com.epam.jwd.core_final.service.impl;
 
 import com.epam.jwd.core_final.context.Application;
-import com.epam.jwd.core_final.context.impl.NassaContext;
 import com.epam.jwd.core_final.domain.Planet;
 import com.epam.jwd.core_final.service.SpacemapService;
 

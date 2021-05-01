@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 public interface Application {
 
     Logger LOGGER = LoggerFactory.getLogger(Application.class);
-    NassaContext context = new NassaContext();
+    ApplicationContext context = new NassaContext();
 
     static void start() {
         // todo
@@ -18,7 +18,6 @@ public interface Application {
             LOGGER.error(e.getMessage());
             System.out.println(e.getMessage());
         }
-
         ApplicationMenu.getApplicationMenu().show();
     }
 }

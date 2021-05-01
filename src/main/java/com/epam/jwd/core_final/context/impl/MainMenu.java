@@ -1,65 +1,52 @@
 package com.epam.jwd.core_final.context.impl;
 
 import com.epam.jwd.core_final.context.Menu;
-import com.epam.jwd.core_final.util.MissionExporter;
+import com.epam.jwd.core_final.util.Exporter;
+import com.epam.jwd.core_final.util.impl.MissionExporter;
 
-import static com.epam.jwd.core_final.context.impl.NassaContext.*;
+import static com.epam.jwd.core_final.context.impl.NassaContext.chosenMenu;
 
 public enum MainMenu implements Menu {
     INSTANCE;
 
     @Override
     public void printMenu() {
-        System.out.println("+---------------------------+");
-        System.out.println("| NASSA MISSION CREATOR 1.0 |");
-        System.out.println("+---------------------------+");
-        System.out.println("| 1. Create mission         |");
-        System.out.println("| 2. Edit mission           |");
-        System.out.println("| 3. Show missions          |");
-//        System.out.println("| 4. Create spaceship       |");
-//        System.out.println("| 5. Edit spaceship         |");
-//        System.out.println("| 6. Show spaceships        |");
-//        System.out.println("| 7. Create crew member     |");
-//        System.out.println("| 8. Edit crew member       |");
-//        System.out.println("| 9. Show crew members      |");
-        System.out.println("| 0. Export missions        |");
-        System.out.println("| /. Exit                   |");
-        System.out.println("+---------------------------+");
+        System.out.println("+-----------------------------+\n"
+                + "|  NASSA MISSION CREATOR 1.0  |\n"
+                + "+-----------------------------+\n"
+                + "| 1. Missions editor          |\n"
+                + "| 2. Spaceships editor        |\n"
+                + "| 3. Crew members editor      |\n"
+                + "| 0. Export missions          |\n"
+                + "| /. Exit                     |\n"
+                + "+-----------------------------+");
     }
 
     @Override
     public void handleInput() {
-        System.out.print("> ");
-        String input = inputSc.nextLine();
-        if (!input.matches("[0-9]|/")) {
-            return;
-        }
-        if (input.equals("/")) {
-            chosenOption = -1;
-            return;
-        }
-        switch (Integer.parseInt(input)) {
+        int option;
+        do {
+            String input = Menu.getInput("[0-9]{1,2}|/", null, false);
+            if (input.equals("/")) {
+                NassaApplicationMenu.exit = true;
+                return;
+            }
+            option = Integer.parseInt(input);
+        } while (option > 3 || option < 0);
+        switch (option) {
             case 1:
-                chosenMenu = MissionMenu.INSTANCE;
-                chosenOption = 1;
+                chosenMenu = SimpleMissionMenu.INSTANCE;
                 break;
             case 2:
-                chosenMenu = MissionMenu.INSTANCE;
-                chosenOption = 2;
+                chosenMenu = SimpleSpaceshipMenu.INSTANCE;
                 break;
             case 3:
-                chosenMenu = MissionMenu.INSTANCE;
-                chosenOption = 3;
+                chosenMenu = SimpleCrewMemberMenu.INSTANCE;
                 break;
-//            case 4:
-//            case 5:
-//            case 6:
-//            case 7:
-//            case 8:
-//            case 9:
             case 0:
-                MissionExporter exporter = MissionExporter.INSTANCE;
+                Exporter exporter = MissionExporter.INSTANCE;
                 exporter.export();
+                break;
         }
     }
 }

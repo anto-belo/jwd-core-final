@@ -18,6 +18,7 @@ import static com.epam.jwd.core_final.util.PropertyReader.getProperty;
  */
 public final class ApplicationProperties {
     private static ApplicationProperties properties;
+
     public final String resourcesDir = "src/main/resources";
     public final String inputRootDir = getProperty("inputRootDir");
     public final String outputRootDir = getProperty("outputRootDir");

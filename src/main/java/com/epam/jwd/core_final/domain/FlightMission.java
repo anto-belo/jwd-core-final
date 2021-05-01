@@ -1,8 +1,10 @@
 package com.epam.jwd.core_final.domain;
 
+import com.epam.jwd.core_final.service.impl.SimpleCrewService;
 import com.epam.jwd.core_final.service.impl.SimpleSpacemapService;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,6 +49,7 @@ public class FlightMission extends AbstractBaseEntity {
         super(id, name);
         this.startDate = startDate;
         this.distance = Math.round(SimpleSpacemapService.INSTANCE.getDistanceBetweenPlanets(from, to));
+//        this.distance = 60L; //todo for tests
         this.endDate = startDate.plusSeconds(this.distance);
         this.assignedSpaceship = assignedSpaceship;
         this.assignedCrew = assignedCrew;
@@ -121,16 +124,21 @@ public class FlightMission extends AbstractBaseEntity {
 
     @Override
     public String toString() {
-        return "FlightMission{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", distance=" + distance +
-                ", assignedSpaceship=" + assignedSpaceship.getName() +
-                ", missionResult=" + missionResult +
-                ", from=" + from.getName() +
-                ", to=" + to.getName() +
-                '}';
+        ApplicationProperties properties = ApplicationProperties.getInstance();
+        int dateLength = properties.dateTimeFormat.length();
+        return String.format("#%-3d %-15s %" + dateLength + "s - %" + dateLength
+                        + "s from %-15s to %-15s on %-15s (dist: %-5d, team: %2d/%-2d) -> %s",
+                id,
+                name,
+                startDate.format(DateTimeFormatter.ofPattern(properties.dateTimeFormat)),
+                endDate.format(DateTimeFormatter.ofPattern(properties.dateTimeFormat)),
+                from.getName(),
+                to.getName(),
+                (assignedSpaceship == null) ? "[REMOVED]" : assignedSpaceship.getName(),
+                distance,
+                assignedCrew.size(),
+                (assignedSpaceship == null) ? 0 : SimpleCrewService.INSTANCE.getMembersNeeded(assignedSpaceship),
+                missionResult
+        );
     }
 }

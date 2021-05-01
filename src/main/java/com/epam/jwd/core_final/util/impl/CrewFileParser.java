@@ -13,22 +13,34 @@ import com.epam.jwd.core_final.util.FileParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class CrewFileParser implements FileParser {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CrewFileParser.class);
+    private static CrewFileParser parser;
+
+    private CrewFileParser() {
+    }
+
+    public static CrewFileParser getInstance() {
+        if (parser == null) {
+            parser = new CrewFileParser();
+        }
+        return parser;
+    }
 
     @Override
-    public void fillEntityStorage() throws InvalidFileFormatException {
+    public void parse() throws InvalidFileFormatException {
         ApplicationProperties props = ApplicationProperties.getInstance();
-        String filePath = props.resourcesDir + "/" + props.inputRootDir + "/" + props.crewFileName;
+        String filePath = props.resourcesDir + File.separator + props.inputRootDir
+                + File.separator + props.crewFileName;
         Optional<String[]> oEntries = getEntries(filePath);
-        EntityFactory<CrewMember> factory = CrewMemberFactory.getInstance();
         String[] entries = oEntries.orElseThrow(() -> new InvalidFileFormatException(FILE_IS_EMPTY_MSG));
+        EntityFactory<CrewMember> factory = CrewMemberFactory.getInstance();
         parseEntries(entries, factory);
     }
 
@@ -49,10 +61,13 @@ public class CrewFileParser implements FileParser {
         return entries;
     }
 
-    private void parseEntries(String[] entries, EntityFactory<CrewMember> factory) {
+    private void parseEntries(String[] entries, EntityFactory<CrewMember> factory) throws InvalidFileFormatException {
         CrewService service = SimpleCrewService.INSTANCE;
         for (String entry : entries) {
             String[] memberArgs = entry.split(",");
+            if (memberArgs.length != 3) {
+                throw new InvalidFileFormatException(INVALID_FILE_FORMAT_MSG);
+            }
             Role role = Role.resolveRoleById(Integer.parseInt(memberArgs[0]));
             String name = memberArgs[1];
             Rank rank = Rank.resolveRankById(Integer.parseInt(memberArgs[2]));

@@ -24,8 +24,8 @@ public class CrewMemberFactoryPreprocessor implements EntityFactory<CrewMember> 
                     || !(args[1] instanceof Role)
                     || !(args[2] instanceof Rank)
                     || (args.length == 5
-                    && !(args[3] instanceof Long)
-                    && !(args[4] instanceof Boolean))) {
+                    && !(args[3] instanceof Boolean)
+                    && !(args[4] instanceof Long))) {
                 throw new InvalidArgumentException(CANNOT_CREATE_OBJ_MSG + args[0]);
             }
             return factory.create(args);

@@ -1,7 +1,5 @@
 package com.epam.jwd.core_final.util.impl;
 
-import com.epam.jwd.core_final.context.Application;
-import com.epam.jwd.core_final.context.impl.NassaContext;
 import com.epam.jwd.core_final.domain.ApplicationProperties;
 import com.epam.jwd.core_final.domain.Role;
 import com.epam.jwd.core_final.domain.Spaceship;
@@ -14,9 +12,9 @@ import com.epam.jwd.core_final.util.FileParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -24,12 +22,23 @@ import java.util.Scanner;
 public class SpaceshipFileParser implements FileParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpaceshipFileParser.class);
+    private static SpaceshipFileParser parser;
+
+    private SpaceshipFileParser() {
+    }
+
+    public static SpaceshipFileParser getInstance() {
+        if (parser == null) {
+            parser = new SpaceshipFileParser();
+        }
+        return parser;
+    }
 
     @Override
-    public void fillEntityStorage() throws InvalidFileFormatException {
+    public void parse() throws InvalidFileFormatException {
         ApplicationProperties props = ApplicationProperties.getInstance();
-        String filePath = props.resourcesDir + "/" + props.inputRootDir + "/" + props.spaceshipsFileName;
-        Collection<Spaceship> spaceships = Application.context.retrieveBaseEntityList(Spaceship.class);
+        String filePath = props.resourcesDir + File.separator + props.inputRootDir
+                + File.separator + props.spaceshipsFileName;
         SpaceshipService service = SimpleSpaceshipService.INSTANCE;
         try (Scanner sc = new Scanner(new FileReader(filePath))) {
             while (sc.hasNextLine()) {
@@ -42,6 +51,9 @@ public class SpaceshipFileParser implements FileParser {
         } catch (FileNotFoundException e) {
             LOGGER.error(FILE_NOT_FOUND_MSG);
             System.out.println(FILE_NOT_FOUND_MSG);
+        }
+        if (service.findAllSpaceships().size() == 0) {
+            throw new InvalidFileFormatException(FILE_IS_EMPTY_MSG);
         }
     }
 

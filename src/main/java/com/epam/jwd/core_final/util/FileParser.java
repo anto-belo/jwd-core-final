@@ -7,5 +7,5 @@ public interface FileParser {
     String FILE_IS_EMPTY_MSG = "File is empty";
     String INVALID_FILE_FORMAT_MSG = "File has invalid format";
 
-    void fillEntityStorage() throws InvalidFileFormatException;
+    void parse() throws InvalidFileFormatException;
 }
