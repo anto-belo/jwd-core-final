@@ -88,6 +88,7 @@ public enum SimpleSpaceshipService implements SpaceshipService {
     private Optional<FlightMission> getSuitableMission(Spaceship spaceship) {
         return context.retrieveBaseEntityList(FlightMission.class).stream()
                 .filter(s -> s.getAssignedSpaceship() == null)
+                .filter(s -> s.getMissionResult() == MissionResult.PLANNED)
                 .filter(s -> spaceship.getFlightDistance() >= s.getDistance())
                 .filter(s -> !isIntersectsWithSpaceshipMissions(s, spaceship))
                 .findFirst();

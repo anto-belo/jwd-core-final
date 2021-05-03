@@ -19,11 +19,10 @@ public enum SimpleMissionStatusChanger implements MissionStatusChanger {
         int membersNeeded = SimpleCrewService.INSTANCE.getMembersNeeded(mission.getAssignedSpaceship());
         int membersCurrent = mission.getAssignedCrew().size();
 
-        if (mission.getEndDate().isBefore(now) && res != MissionResult.COMPLETED && res != MissionResult.FAILED) {
-            end(mission);
-        } else if (mission.getStartDate().isBefore(now) && now.isBefore(mission.getEndDate())
-                && membersNeeded != membersCurrent && res != MissionResult.IN_PROGRESS) {
+        if (mission.getStartDate().isBefore(now) && membersNeeded != membersCurrent) {
             cancel(mission);
+        } else if (mission.getEndDate().isBefore(now) && res != MissionResult.COMPLETED && res != MissionResult.FAILED) {
+            end(mission);
         } else if (mission.getStartDate().isBefore(now) && now.isBefore(mission.getEndDate())
                 && res != MissionResult.IN_PROGRESS) {
             inProgress(mission);
